@@ -19,11 +19,16 @@ unsigned char addonWords(uint8_t mode, uint8_t reg, uint8_t size);
 namespace SEOps
 {
 	void addq(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
-	void subq(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
 	void add(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
 	void addx(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
 	void addi(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
 	void adda(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
+
+	void subq(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
+	void sub(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
+	void suba(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
+	void subi(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
+	void subx(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
 
 	void move_b(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
 	void move_w(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);

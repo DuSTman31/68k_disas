@@ -31,7 +31,11 @@ void scanInput(void *buf, unsigned int offset, opDetails &od)
 	switch(opcodeShort)
 	{
 	case 0x00:
-		if((opcodeWord & 0x0006))
+		if((opcodeWord & 0xFF00) == 0x0800)
+		{
+			SEOps::subi(opcodeWord, buf, offset, od);
+		}
+		else if((opcodeWord & 0xFF00) == 0x0600)
 		{
 			SEOps::addi(opcodeWord, buf, offset, od);
 		}
@@ -258,6 +262,23 @@ void scanInput(void *buf, unsigned int offset, opDetails &od)
 	case 0x08:
 		SEOps::or(opcodeWord, buf, offset, od);
 		break;
+	case 0x09:
+		if((opcodeWord & 0xF000) == 0x9000)
+		{
+			if((opcodeWord & 0xF130) == 0x9100)
+			{
+				SEOps::subx(opcodeWord, buf, offset, od);
+			}
+			else if(((opcodeWord & 0x01C0) == 0x00C0) || ((opcodeWord & 0x01C0) == 0x01C0))
+			{
+				SEOps::suba(opcodeWord, buf, offset, od);
+			}
+			else
+			{
+				SEOps::sub(opcodeWord, buf, offset, od);
+			}
+		}
+		break;
 	case 0x0C:
 		SEOps::add(opcodeWord, buf, offset, od);
 		break;
@@ -341,14 +362,6 @@ namespace SEOps
 		od.size = size;
 	}
 
-	void subq(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
-	{
-		unsigned int size = 1;
-		size += addonWords((opcodeWord & 0x0038) >>3, (opcodeWord & 0x0007), 1);
-		od.size = size;
-		od.mnemonic = "SUBQ";
-	}
-
 	void add(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
 	{
 		unsigned int size = 1;
@@ -380,6 +393,75 @@ namespace SEOps
 		od.size = size;
 	}
 
+	void subq(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
+	{
+		unsigned int size = 1;
+		size += addonWords((opcodeWord & 0x0038) >>3, (opcodeWord & 0x0007), 1);
+		od.size = size;
+		od.mnemonic = "SUBQ";
+	}
+
+	void sub(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
+	{
+		unsigned int size = 1;
+		unsigned int opmode = ((opcodeWord & 0x91C0) >> 6);
+		if((opmode == 0x00) || (opmode == 0x04))
+		{
+			od.operandSize = "b";
+			size += addonWords((opcodeWord & 0x0038) >>3, (opcodeWord & 0x0007), 1);
+		}
+		else if((opmode == 0x01) || (opmode == 0x05))
+		{
+			od.operandSize = "w";
+			size += addonWords((opcodeWord & 0x0038) >>3, (opcodeWord & 0x0007), 2);
+		}
+		else if((opmode == 0x02) || (opmode == 0x06))
+		{
+			od.operandSize = "l";
+			size += addonWords((opcodeWord & 0x0038) >>3, (opcodeWord & 0x0007), 4);
+		}
+		od.size = size;
+		od.mnemonic = "sub";
+	}
+
+	void suba(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
+	{
+		unsigned int size = 1;
+		size += addonWords((opcodeWord & 0x0038) >>3, (opcodeWord & 0x0007), 1);
+		od.size = size;
+		od.mnemonic = "suba";
+	}
+
+	void subi(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
+	{
+		unsigned int size = 1;
+		unsigned int opSizeField = 0;
+		opSizeField = ((opcodeWord & 0x00C0) >> 6);
+		if(opSizeField == 0x00)
+		{
+			od.operandSize = "b";
+			size += addonWords((opcodeWord & 0x0038) >>3, (opcodeWord & 0x0007), 1);
+		}
+		else if(opSizeField == 0x01)
+		{
+			od.operandSize = "w";
+			size += addonWords((opcodeWord & 0x0038) >>3, (opcodeWord & 0x0007), 2);
+		}
+		else if(opSizeField == 0x02)
+		{
+			od.operandSize = "l";
+			size += addonWords((opcodeWord & 0x0038) >>3, (opcodeWord & 0x0007), 4);
+		}
+		od.size = size;
+		od.mnemonic = "subi";
+	}
+
+	void subx(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
+	{
+		unsigned int size = 1;
+		od.size = size;
+		od.mnemonic = "subx";
+	}
 
 	void move_b(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
 	{
