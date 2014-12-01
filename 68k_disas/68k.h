@@ -40,8 +40,6 @@ namespace SEOps
 
 	void or(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
 
-	void ori(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
-
 	void trap(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
 
 	void bra(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
@@ -85,6 +83,11 @@ namespace SEOps
 	void dble(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
 
 	void lea(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
+
+	void mulu(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
+	void muls(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
+
+	void ori(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
 }
 
 

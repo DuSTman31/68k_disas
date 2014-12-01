@@ -31,17 +31,17 @@ void scanInput(void *buf, unsigned int offset, opDetails &od)
 	switch(opcodeShort)
 	{
 	case 0x00:
-		if((opcodeWord & 0xFF00) == 0x0800)
+		if((opcodeWord & 0xFF00) == 0x0000)
+		{
+			SEOps::ori(opcodeWord, buf, offset, od);
+		}
+		else if((opcodeWord & 0xFF00) == 0x0400)
 		{
 			SEOps::subi(opcodeWord, buf, offset, od);
 		}
 		else if((opcodeWord & 0xFF00) == 0x0600)
 		{
 			SEOps::addi(opcodeWord, buf, offset, od);
-		}
-		else if(opcodeWord == 0)
-		{
-			SEOps::ori(opcodeWord, buf, offset, od);
 		}
 		break;
 	case 0x01:
@@ -183,6 +183,7 @@ void scanInput(void *buf, unsigned int offset, opDetails &od)
 		}
 		break;
 	case 0x06:
+
 		if((opcodeWord & 0xFF00) == 0x6000)
 		{
 			// BRA
@@ -258,6 +259,7 @@ void scanInput(void *buf, unsigned int offset, opDetails &od)
 			// BLE
 			SEOps::ble(opcodeWord, buf, offset, od);
 		}
+
 		break;
 	case 0x08:
 		SEOps::or(opcodeWord, buf, offset, od);
@@ -280,7 +282,18 @@ void scanInput(void *buf, unsigned int offset, opDetails &od)
 		}
 		break;
 	case 0x0C:
-		SEOps::add(opcodeWord, buf, offset, od);
+		if((opcodeWord & 0xF1C0) == 0xc0C0)
+		{
+			SEOps::mulu(opcodeWord, buf, offset, od);
+		}
+		else if((opcodeWord & 0xF1C0) == 0xc1C0)
+		{
+			SEOps::muls(opcodeWord, buf, offset, od);
+		}
+		else
+		{
+			SEOps::add(opcodeWord, buf, offset, od);
+		}
 		break;
 	case 0x0D:
 		if((opcodeWord & 0xD100) == 0xD100)
@@ -440,16 +453,19 @@ namespace SEOps
 		if(opSizeField == 0x00)
 		{
 			od.operandSize = "b";
+			size += 1;
 			size += addonWords((opcodeWord & 0x0038) >>3, (opcodeWord & 0x0007), 1);
 		}
 		else if(opSizeField == 0x01)
 		{
 			od.operandSize = "w";
+			size += 1;
 			size += addonWords((opcodeWord & 0x0038) >>3, (opcodeWord & 0x0007), 2);
 		}
 		else if(opSizeField == 0x02)
 		{
 			od.operandSize = "l";
+			size += 2;
 			size += addonWords((opcodeWord & 0x0038) >>3, (opcodeWord & 0x0007), 4);
 		}
 		od.size = size;
@@ -519,13 +535,6 @@ namespace SEOps
 		od.size = size;		
 	}
 
-	void ori(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
-	{
-		unsigned int size = 1;
-		od.mnemonic = "ORI";
-		size += addonWords(((opcodeWord & 0x0038) >>3), (opcodeWord & 0x0007), 1);
-		od.size = size;		
-	}
 
 
 	void or(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
@@ -967,4 +976,43 @@ namespace SEOps
 		od.mnemonic = "lea";
 	}
 
+	void mulu(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
+	{
+		unsigned int size = 1;
+		size += addonWords(((opcodeWord & 0x0038) >>3), (opcodeWord & 0x0007), 1);
+		od.size = size;
+		od.mnemonic = "mulu";	
+		od.operandSize = "w";
+	}
+
+	void muls(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
+	{
+		unsigned int size = 1;
+		size += addonWords(((opcodeWord & 0x0038) >>3), (opcodeWord & 0x0007), 1);
+		od.size = size;
+		od.mnemonic = "muls";
+		od.operandSize = "w";
+	}
+
+	void ori(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
+	{
+		unsigned int size = 1;
+		if((opcodeWord & 0x00C0) == 0x0000)
+		{
+			od.operandSize = "b";
+			size += addonWords(((opcodeWord & 0x0038) >>3), (opcodeWord & 0x0007), 1);
+		}
+		else if((opcodeWord & 0x00C0) == 0x0040)
+		{
+			od.operandSize = "w";
+			size += addonWords(((opcodeWord & 0x0038) >>3), (opcodeWord & 0x0007), 2);
+		}
+		else if((opcodeWord & 0x00C0) == 0x0080)
+		{
+			od.operandSize = "l";
+			size += addonWords(((opcodeWord & 0x0038) >>3), (opcodeWord & 0x0007), 4);
+		}
+		od.size = size;
+		od.mnemonic = "ori";
+	}
 }
