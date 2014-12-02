@@ -68,7 +68,11 @@ void scanInput(void *buf, unsigned int offset, opDetails &od)
 		}
 		break;
 	case 0x04:
-		if((opcodeWord & 0xF1C0) == 0x41C0)
+		if((opcodeWord & 0xFF00) == 0x4200)
+		{
+			SEOps::clr(opcodeWord, buf, offset, od);
+		}
+		else if((opcodeWord & 0xF1C0) == 0x41C0)
 		{
 			SEOps::lea(opcodeWord, buf, offset, od);
 		}
@@ -261,6 +265,12 @@ void scanInput(void *buf, unsigned int offset, opDetails &od)
 		}
 
 		break;
+	case 0x07:
+		if((opcodeWord & 0xF100) == 0x7000)
+		{
+			SEOps::moveq(opcodeWord, buf, offset, od);
+		}
+		break;
 	case 0x08:
 		SEOps::or(opcodeWord, buf, offset, od);
 		break;
@@ -357,20 +367,20 @@ namespace SEOps
 		unsigned char dataSize = (opcodeWord & 0x00C0) >>6;
 		if(dataSize == 0)
 		{
-			od.operandSize = "B";
+			od.operandSize = "b";
 			size += addonWords((opcodeWord & 0x0038) >>3, (opcodeWord & 0x0007), 1);
 		}
 		if(dataSize == 1)
 		{
-			od.operandSize = "W";
+			od.operandSize = "w";
 			size += addonWords((opcodeWord & 0x0038) >>3, (opcodeWord & 0x0007), 2);
 		}
 		if(dataSize == 2)
 		{
-			od.operandSize = "L";
+			od.operandSize = "l";
 			size += addonWords((opcodeWord & 0x0038) >>3, (opcodeWord & 0x0007), 4);
 		}
-		od.mnemonic = "ADDQ";
+		od.mnemonic = "addq";
 
 		od.size = size;
 	}
@@ -378,7 +388,7 @@ namespace SEOps
 	void add(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
 	{
 		unsigned int size = 1;
-		od.mnemonic = "ADD";
+		od.mnemonic = "add";
 		size += addonWords(((opcodeWord & 0x0038) >>3), (opcodeWord & 0x0007), 1);
 		od.size = size;
 	}
@@ -386,14 +396,14 @@ namespace SEOps
 	void addx(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
 	{
 		unsigned int size = 1;
-		od.mnemonic = "ADDX";
+		od.mnemonic = "addx";
 		od.size = size;
 	}
 
 	void addi(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
 	{
 		unsigned int size = 1;
-		od.mnemonic = "ADDI";
+		od.mnemonic = "addi";
 		size += addonWords(((opcodeWord & 0x0038) >>3), (opcodeWord & 0x0007), 1);
 		od.size = size;
 	}
@@ -401,7 +411,7 @@ namespace SEOps
 	void adda(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
 	{
 		unsigned int size = 1;
-		od.mnemonic = "ADDA";
+		od.mnemonic = "adda";
 		size += addonWords(((opcodeWord & 0x0038) >>3), (opcodeWord & 0x0007), 1);
 		od.size = size;
 	}
@@ -411,7 +421,7 @@ namespace SEOps
 		unsigned int size = 1;
 		size += addonWords((opcodeWord & 0x0038) >>3, (opcodeWord & 0x0007), 1);
 		od.size = size;
-		od.mnemonic = "SUBQ";
+		od.mnemonic = "subq";
 	}
 
 	void sub(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
@@ -482,8 +492,8 @@ namespace SEOps
 	void move_b(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
 	{
 		unsigned int size = 1;
-		od.mnemonic = "MOVE";
-		od.operandSize = "B";
+		od.mnemonic = "move";
+		od.operandSize = "b";
 		size += addonWords(((opcodeWord & 0x0038) >>3), (opcodeWord & 0x0007), 1);
 		size += addonWords(((opcodeWord & 0x01C0) >> 6), ((opcodeWord & 0x0E00) >> 9), 1);
 		od.size = size;
@@ -492,8 +502,8 @@ namespace SEOps
 	void move_w(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
 	{
 		unsigned int size = 1;
-		od.mnemonic = "MOVE";
-		od.operandSize = "W";
+		od.mnemonic = "move";
+		od.operandSize = "w";
 		size += addonWords(((opcodeWord & 0x0038) >>3), (opcodeWord & 0x0007), 2);
 		size += addonWords(((opcodeWord & 0x01C0) >> 6), ((opcodeWord & 0x0E00) >> 9), 2);
 		od.size = size;
@@ -502,8 +512,8 @@ namespace SEOps
 	void move_l(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
 	{
 		unsigned int size = 1;
-		od.mnemonic = "MOVE";
-		od.operandSize = "L";
+		od.mnemonic = "move";
+		od.operandSize = "l";
 		size += addonWords(((opcodeWord & 0x0038) >>3), (opcodeWord & 0x0007), 4);
 		size += addonWords(((opcodeWord & 0x01C0) >> 6), ((opcodeWord & 0x0E00) >> 9), 4);
 		od.size = size;
@@ -512,8 +522,8 @@ namespace SEOps
 	void movea_w(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
 	{
 		unsigned int size = 1;
-		od.mnemonic = "MOVEA";
-		od.operandSize = "W";
+		od.mnemonic = "movea";
+		od.operandSize = "w";
 		size += addonWords(((opcodeWord & 0x0038) >>3), (opcodeWord & 0x0007), 1);
 		od.size = size;		
 	}
@@ -521,8 +531,8 @@ namespace SEOps
 	void movea_l(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
 	{
 		unsigned int size = 1;
-		od.mnemonic = "MOVEA";
-		od.operandSize = "L";
+		od.mnemonic = "movea";
+		od.operandSize = "l";
 		size += addonWords(((opcodeWord & 0x0038) >>3), (opcodeWord & 0x0007), 4);
 		od.size = size;		
 	}
@@ -530,7 +540,7 @@ namespace SEOps
 	void not(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
 	{
 		unsigned int size = 1;
-		od.mnemonic = "NOT";
+		od.mnemonic = "not";
 		size += addonWords(((opcodeWord & 0x0038) >>3), (opcodeWord & 0x0007), 1);
 		od.size = size;		
 	}
@@ -540,7 +550,7 @@ namespace SEOps
 	void or(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
 	{
 		unsigned int size = 1;
-		od.mnemonic = "OR";
+		od.mnemonic = "or";
 		size += addonWords(((opcodeWord & 0x0038) >>3), (opcodeWord & 0x0007), 1);
 		od.size = size;		
 	}
@@ -548,7 +558,7 @@ namespace SEOps
 	void trap(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
 	{
 		unsigned int size = 1;
-		od.mnemonic = "TRAP";
+		od.mnemonic = "trap";
 		od.size = size;		
 	}
 
@@ -1014,5 +1024,35 @@ namespace SEOps
 		}
 		od.size = size;
 		od.mnemonic = "ori";
+	}
+
+	void moveq(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
+	{
+		unsigned int size = 1;
+		od.size = size;
+		od.mnemonic = "moveq";
+	}
+
+	void clr(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
+	{
+		unsigned int size = 1;
+		if((opcodeWord & 0x00C0) == 00)
+		{
+			od.operandSize = "b";
+			size += addonWords(((opcodeWord & 0x0038) >>3), (opcodeWord & 0x0007), 1);
+		}
+		else if((opcodeWord & 0x00C0) == 01)
+		{
+			od.operandSize = "w";
+			size += addonWords(((opcodeWord & 0x0038) >>3), (opcodeWord & 0x0007), 2);
+
+		}
+		else if((opcodeWord & 0x00C0) == 10)
+		{
+			od.operandSize = "l";
+			size += addonWords(((opcodeWord & 0x0038) >>3), (opcodeWord & 0x0007), 4);
+		}
+		od.size = size;
+		od.mnemonic = "clr";
 	}
 }

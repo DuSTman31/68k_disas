@@ -88,6 +88,9 @@ namespace SEOps
 	void muls(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
 
 	void ori(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
+	void moveq(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
+
+	void clr(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
 }
 
 
