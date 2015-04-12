@@ -33,6 +33,15 @@
     <ClInclude Include="endian_conversion.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="opChain.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpTreeNode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpTreeInternalNode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -45,6 +54,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GEMDOS_PRG.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="opChain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OpTreeNode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OpTreeInternalNode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

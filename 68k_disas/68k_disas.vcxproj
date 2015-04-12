@@ -78,6 +78,9 @@
     <ClInclude Include="68k.h" />
     <ClInclude Include="endian_conversion.h" />
     <ClInclude Include="GEMDOS_PRG.h" />
+    <ClInclude Include="opChain.h" />
+    <ClInclude Include="OpTreeInternalNode.h" />
+    <ClInclude Include="OpTreeNode.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
@@ -85,6 +88,9 @@
     <ClCompile Include="68k.cpp" />
     <ClCompile Include="68k_disas.cpp" />
     <ClCompile Include="GEMDOS_PRG.cpp" />
+    <ClCompile Include="opChain.cpp" />
+    <ClCompile Include="OpTreeInternalNode.cpp" />
+    <ClCompile Include="OpTreeNode.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
