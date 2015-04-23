@@ -21,7 +21,6 @@ opChain::addOp(const opDetails &od)
 	chainSize += od.size;
 }
 
-
 void 
 opChain::split(bool rel, unsigned int size)
 {

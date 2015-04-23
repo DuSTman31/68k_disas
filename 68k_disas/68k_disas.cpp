@@ -8,7 +8,7 @@
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	GEMDOS_PRG *np = new GEMDOS_PRG("TEST2.PRG");
+	GEMDOS_PRG *np = new GEMDOS_PRG("TEST3.PRG");
 	char *tSect = NULL;
 	unsigned int tSectSize = 0;
 
@@ -22,7 +22,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		memset(&a, 0, sizeof(opDetails));
 		scanInput(tSect, index, a);
 		if(a.operandSize)
-			printf("Opcode:\t%s.%s\n", a.mnemonic, a.operandSize);
+			printf("Opcode:\t%s.%s\t%i\n", a.mnemonic, a.operandSize, a.disp);
 		else
 			printf("Opcode:\t%s\n", a.mnemonic);
 

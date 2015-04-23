@@ -291,6 +291,12 @@ void scanInput(void *buf, unsigned int offset, opDetails &od)
 			}
 		}
 		break;
+	case 0x0B:
+		if((opcodeWord & 0xF000) == 0xB000)
+		{
+			SEOps::cmp(opcodeWord, buf, offset, od);
+		}
+		break;
 	case 0x0C:
 		if((opcodeWord & 0xF1C0) == 0xc0C0)
 		{
@@ -356,6 +362,41 @@ unsigned char addonWords(uint8_t mode, uint8_t reg, uint8_t size)
 		break;
 	}
 	return 0;
+}
+
+void displacement(uint16_t opcodeWord, uint16_t *buf, opDetails &od)
+{
+	if((opcodeWord & 0x00FF) == 0x00)
+	{
+		od.operandSize = "w";
+		//.w - 16 bit displacement
+		int16_t dispDec = *((buf)+1);
+		dispDec = bigToNative(dispDec);
+		od.disp = dispDec;
+		od.size += 1;
+	}
+	else if((opcodeWord & 0x00FF) == 0xFF)
+	{
+		od.operandSize = "l";
+		// .l - 32 bit displacement
+		int16_t dispDec = *((buf)+1);
+		int32_t dispDec2 = dispDec;
+		dispDec2 <<= 16;
+		dispDec = *((buf)+2);
+		dispDec2 |= dispDec;
+		dispDec2 = bigToNative(dispDec2);
+		od.disp = dispDec2;
+		od.size += 2;
+	}
+	else
+	{
+		int16_t dispDec = *((int16_t*)buf);
+		dispDec = bigToNative(dispDec);
+		dispDec ^= 0x0F;
+		int8_t dispDec2 = dispDec;
+		od.disp = dispDec;
+	}
+	od.hasDisp = true;
 }
 
 namespace SEOps
@@ -565,19 +606,9 @@ namespace SEOps
 	void bra(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
 	{
 		unsigned int size = 1;
-		if((opcodeWord & 0x00FF) == 0x00)
-		{
-			size += 1;
-			od.operandSize = "w";
-			//.w - 16 bit displacement
-		}
-		else if((opcodeWord & 0x00FF) == 0xFF)
-		{
-			size += 2;
-			od.operandSize = "l";
-			// .l - 32 bit displacement
-		}
 		od.size = size;
+		displacement(opcodeWord, (uint16_t*)(((char*)buf)+offset), od);		
+
 		od.mnemonic = "bra";
 	}
 
@@ -592,19 +623,9 @@ namespace SEOps
 	void bsr(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
 	{
 		unsigned int size = 1;
-		if((opcodeWord & 0x00FF) == 0x00)
-		{
-			size += 1;
-			od.operandSize = "w";
-			//.w - 16 bit displacement
-		}
-		else if((opcodeWord & 0x00FF) == 0xFF)
-		{
-			size += 2;
-			od.operandSize = "l";
-			// .l - 32 bit displacement
-		}
 		od.size = size;
+		displacement(opcodeWord, (uint16_t*)(((char*)buf)+offset), od);		
+
 		od.mnemonic = "bsr";
 	}
 
@@ -709,18 +730,12 @@ namespace SEOps
 	void bne(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
 	{
 		unsigned int size = 1;
-		if((opcodeWord & 0x00FF) == 0x00)
-		{
-			size += 1;
-			//.w - 16 bit displacement
-		}
-		else if((opcodeWord & 0x00FF) == 0xFF)
-		{
-			size += 2;
-			// .l - 32 bit displacement
-		}
 		od.size = size;
+		displacement(opcodeWord, (uint16_t*)(((char*)buf)+offset), od);	
+
 		od.mnemonic = "bne";
+
+
 	}
 
 	void beq(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
@@ -1055,4 +1070,28 @@ namespace SEOps
 		od.size = size;
 		od.mnemonic = "clr";
 	}
+
+	void cmp(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
+	{
+		unsigned int size = 1;
+		if((opcodeWord & 0x00C0) == 00)
+		{
+			od.operandSize = "b";
+			size += addonWords(((opcodeWord & 0x0038) >>3), (opcodeWord & 0x0007), 1);
+		}
+		else if((opcodeWord & 0x00C0) == 01)
+		{
+			od.operandSize = "w";
+			size += addonWords(((opcodeWord & 0x0038) >>3), (opcodeWord & 0x0007), 2);
+
+		}
+		else if((opcodeWord & 0x00C0) == 10)
+		{
+			od.operandSize = "l";
+			size += addonWords(((opcodeWord & 0x0038) >>3), (opcodeWord & 0x0007), 4);
+		}
+		od.size = size;
+		od.mnemonic = "cmp";
+	}
+
 }

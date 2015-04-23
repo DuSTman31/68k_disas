@@ -99,6 +99,21 @@ inline uint64_t littleToNative(const uint64_t in)
 	}
 }
 
+inline int16_t littleToNative(const int16_t in)
+{
+	return littleToNative((uint16_t)in);
+}
+
+inline int32_t littleToNative(const int32_t in)
+{
+	return littleToNative((uint32_t)in);
+}
+
+inline int64_t littleToNative(const int64_t in)
+{
+	return littleToNative((uint64_t)in);
+}
+
 inline uint16_t bigToNative(const uint16_t in)
 {
 	if(isBigEndian())
@@ -127,4 +142,19 @@ inline uint64_t bigToNative(const uint64_t in)
 	{
 		return swapEndian(in);
 	}
+}
+
+inline int16_t bigToNative(const int16_t in)
+{
+	return bigToNative((uint16_t)in);
+}
+
+inline int32_t bigToNative(const int32_t in)
+{
+	return bigToNative((uint32_t)in);
+}
+
+inline int64_t bigToNative(const int64_t in)
+{
+	return bigToNative((uint64_t)in);
 }

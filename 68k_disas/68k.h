@@ -8,6 +8,8 @@ struct opDetails
 	uint8_t size;
 	char *mnemonic;
 	char *operandSize;
+	int32_t disp;
+	bool hasDisp;
 };
 
 void decode(void *buf, unsigned int offset);
@@ -15,6 +17,7 @@ void decode(void *buf, unsigned int offset);
 void scanInput(void *buf, unsigned int offset, opDetails &od);
 
 unsigned char addonWords(uint8_t mode, uint8_t reg, uint8_t size);
+void displacement(uint16_t opcodeWord, uint16_t *buf, opDetails &od);
 
 namespace SEOps
 {
@@ -91,6 +94,8 @@ namespace SEOps
 	void moveq(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
 
 	void clr(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
+
+	void cmp(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
 }
 
 
