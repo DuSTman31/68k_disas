@@ -3,13 +3,29 @@
 
 #include <cstdint>
 
+enum addressMode {DATAREGDIRECT, ADDRREGDIRECT, ABSSHORT, ABSLONG, PCRELOFF, PCRELINDOFF, ADDRINDIRECT, ADDRINDIRECTPOSTINC, ADDRINDIRECTPREDEC}; 
+
+union operandData
+{
+	int32_t op;
+	uint8_t reg;
+
+};
+
+struct operand
+{
+	bool present;
+	int addrMode;
+	union operandData opData; 
+};
+
 struct opDetails
 {
 	uint8_t size;
 	char *mnemonic;
 	char *operandSize;
-	int32_t disp;
-	bool hasDisp;
+	struct operand op1;
+	struct operand op2;
 };
 
 void decode(void *buf, unsigned int offset);

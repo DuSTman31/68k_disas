@@ -372,7 +372,7 @@ void displacement(uint16_t opcodeWord, uint16_t *buf, opDetails &od)
 		//.w - 16 bit displacement
 		int16_t dispDec = *((buf)+1);
 		dispDec = bigToNative(dispDec);
-		od.disp = dispDec;
+		od.op1.opData.op = dispDec;
 		od.size += 1;
 	}
 	else if((opcodeWord & 0x00FF) == 0xFF)
@@ -385,7 +385,7 @@ void displacement(uint16_t opcodeWord, uint16_t *buf, opDetails &od)
 		dispDec = *((buf)+2);
 		dispDec2 |= dispDec;
 		dispDec2 = bigToNative(dispDec2);
-		od.disp = dispDec2;
+		od.op1.opData.op = dispDec;
 		od.size += 2;
 	}
 	else
@@ -394,9 +394,10 @@ void displacement(uint16_t opcodeWord, uint16_t *buf, opDetails &od)
 		dispDec = bigToNative(dispDec);
 		dispDec ^= 0x0F;
 		int8_t dispDec2 = dispDec;
-		od.disp = dispDec;
+		od.op1.opData.op = dispDec;
 	}
-	od.hasDisp = true;
+	od.op1.present = true;
+	od.op1.addrMode = PCRELOFF;
 }
 
 namespace SEOps
@@ -662,68 +663,33 @@ namespace SEOps
 	void bhi(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
 	{
 		unsigned int size = 1;
-		if((opcodeWord & 0x00FF) == 0x00)
-		{
-			size += 1;
-			//.w - 16 bit displacement
-		}
-		else if((opcodeWord & 0x00FF) == 0xFF)
-		{
-			size += 2;
-			// .l - 32 bit displacement
-		}
 		od.size = size;
+		displacement(opcodeWord, (uint16_t*)(((char*)buf)+offset), od);	
 		od.mnemonic = "bhi";
 	}
 
 	void bls(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
 	{
 		unsigned int size = 1;
-		if((opcodeWord & 0x00FF) == 0x00)
-		{
-			size += 1;
-			//.w - 16 bit displacement
-		}
-		else if((opcodeWord & 0x00FF) == 0xFF)
-		{
-			size += 2;
-			// .l - 32 bit displacement
-		}
 		od.size = size;
+		displacement(opcodeWord, (uint16_t*)(((char*)buf)+offset), od);	
 		od.mnemonic = "bls";
 	}
 
 	void bcc(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
 	{
 		unsigned int size = 1;
-		if((opcodeWord & 0x00FF) == 0x00)
-		{
-			size += 1;
-			//.w - 16 bit displacement
-		}
-		else if((opcodeWord & 0x00FF) == 0xFF)
-		{
-			size += 2;
-			// .l - 32 bit displacement
-		}
 		od.size = size;
+		displacement(opcodeWord, (uint16_t*)(((char*)buf)+offset), od);		
+
 		od.mnemonic = "bcc";
 	}
 
 	void bcs(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
 	{
 		unsigned int size = 1;
-		if((opcodeWord & 0x00FF) == 0x00)
-		{
-			size += 1;
-			//.w - 16 bit displacement
-		}
-		else if((opcodeWord & 0x00FF) == 0xFF)
-		{
-			size += 2;
-			// .l - 32 bit displacement
-		}
 		od.size = size;
+		displacement(opcodeWord, (uint16_t*)(((char*)buf)+offset), od);	
 		od.mnemonic = "bcs";
 	}
 
@@ -741,156 +707,75 @@ namespace SEOps
 	void beq(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
 	{
 		unsigned int size = 1;
-		if((opcodeWord & 0x00FF) == 0x00)
-		{
-			size += 1;
-			//.w - 16 bit displacement
-		}
-		else if((opcodeWord & 0x00FF) == 0xFF)
-		{
-			size += 2;
-			// .l - 32 bit displacement
-		}
 		od.size = size;
+		displacement(opcodeWord, (uint16_t*)(((char*)buf)+offset), od);	
 		od.mnemonic = "beq";
 	}
 
 	void bvc(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
 	{
 		unsigned int size = 1;
-		if((opcodeWord & 0x00FF) == 0x00)
-		{
-			size += 1;
-			//.w - 16 bit displacement
-		}
-		else if((opcodeWord & 0x00FF) == 0xFF)
-		{
-			size += 2;
-			// .l - 32 bit displacement
-		}
 		od.size = size;
+		displacement(opcodeWord, (uint16_t*)(((char*)buf)+offset), od);	
 		od.mnemonic = "bvc";
 	}
 
 	void bvs(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
 	{
 		unsigned int size = 1;
-		if((opcodeWord & 0x00FF) == 0x00)
-		{
-			size += 1;
-			//.w - 16 bit displacement
-		}
-		else if((opcodeWord & 0x00FF) == 0xFF)
-		{
-			size += 2;
-			// .l - 32 bit displacement
-		}
 		od.size = size;
+		displacement(opcodeWord, (uint16_t*)(((char*)buf)+offset), od);	
 		od.mnemonic = "bvs";
 	}
 
 	void bpl(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
 	{
 		unsigned int size = 1;
-		if((opcodeWord & 0x00FF) == 0x00)
-		{
-			size += 1;
-			//.w - 16 bit displacement
-		}
-		else if((opcodeWord & 0x00FF) == 0xFF)
-		{
-			size += 2;
-			// .l - 32 bit displacement
-		}
 		od.size = size;
+		displacement(opcodeWord, (uint16_t*)(((char*)buf)+offset), od);	
 		od.mnemonic = "bpl";
 	}
 
 	void bmi(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
 	{
 		unsigned int size = 1;
-		if((opcodeWord & 0x00FF) == 0x00)
-		{
-			size += 1;
-			//.w - 16 bit displacement
-		}
-		else if((opcodeWord & 0x00FF) == 0xFF)
-		{
-			size += 2;
-			// .l - 32 bit displacement
-		}
 		od.size = size;
+		displacement(opcodeWord, (uint16_t*)(((char*)buf)+offset), od);	
 		od.mnemonic = "bmi";
 	}
 
 	void bge(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
 	{
 		unsigned int size = 1;
-		if((opcodeWord & 0x00FF) == 0x00)
-		{
-			size += 1;
-			//.w - 16 bit displacement
-		}
-		else if((opcodeWord & 0x00FF) == 0xFF)
-		{
-			size += 2;
-			// .l - 32 bit displacement
-		}
+
 		od.size = size;
+		displacement(opcodeWord, (uint16_t*)(((char*)buf)+offset), od);	
 		od.mnemonic = "bge";
 	}
 
 	void blt(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
 	{
 		unsigned int size = 1;
-		if((opcodeWord & 0x00FF) == 0x00)
-		{
-			size += 1;
-			//.w - 16 bit displacement
-		}
-		else if((opcodeWord & 0x00FF) == 0xFF)
-		{
-			size += 2;
-			// .l - 32 bit displacement
-		}
 		od.size = size;
+		displacement(opcodeWord, (uint16_t*)(((char*)buf)+offset), od);	
 		od.mnemonic = "blt";
 	}
 
 	void bgt(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
 	{
 		unsigned int size = 1;
-		if((opcodeWord & 0x00FF) == 0x00)
-		{
-			size += 1;
-			//.w - 16 bit displacement
-		}
-		else if((opcodeWord & 0x00FF) == 0xFF)
-		{
-			size += 2;
-			// .l - 32 bit displacement
-		}
 		od.size = size;
+		displacement(opcodeWord, (uint16_t*)(((char*)buf)+offset), od);	
 		od.mnemonic = "bgt";
 	}
 
 	void ble(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
 	{
 		unsigned int size = 1;
-		if((opcodeWord & 0x00FF) == 0x00)
-		{
-			size += 1;
-			//.w - 16 bit displacement
-		}
-		else if((opcodeWord & 0x00FF) == 0xFF)
-		{
-			size += 2;
-			// .l - 32 bit displacement
-		}
 		od.size = size;
+		displacement(opcodeWord, (uint16_t*)(((char*)buf)+offset), od);	
 		od.mnemonic = "ble";
 	}
-
 
 
 	void dbhi(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)

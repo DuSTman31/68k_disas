@@ -22,7 +22,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		memset(&a, 0, sizeof(opDetails));
 		scanInput(tSect, index, a);
 		if(a.operandSize)
-			printf("Opcode:\t%s.%s\t%i\n", a.mnemonic, a.operandSize, a.disp);
+			printf("Opcode:\t%s.%s\n", a.mnemonic, a.operandSize);
 		else
 			printf("Opcode:\t%s\n", a.mnemonic);
 
