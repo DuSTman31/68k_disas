@@ -35,6 +35,10 @@ void scanInput(void *buf, unsigned int offset, opDetails &od)
 		{
 			SEOps::ori(opcodeWord, buf, offset, od);
 		}
+		else if((opcodeWord & 0xFF00) == 0x0200)
+		{
+			SEOps::addi(opcodeWord, buf, offset, od);
+		}
 		else if((opcodeWord & 0xFF00) == 0x0400)
 		{
 			SEOps::subi(opcodeWord, buf, offset, od);
@@ -292,19 +296,28 @@ void scanInput(void *buf, unsigned int offset, opDetails &od)
 		}
 		break;
 	case 0x0B:
-		if((opcodeWord & 0xF000) == 0xB000)
+		if((opcodeWord & 0xF100) == 0xB000)
 		{
 			SEOps::cmp(opcodeWord, buf, offset, od);
 		}
+		else if((opcodeWord & 0xF100) == 0xB100)
+		{
+			SEOps::eor(opcodeWord, buf, offset, od);
+		}
 		break;
 	case 0x0C:
-		if((opcodeWord & 0xF1C0) == 0xc0C0)
+		
+		if((opcodeWord & 0xF1C0) == 0xC0C0)
 		{
 			SEOps::mulu(opcodeWord, buf, offset, od);
 		}
-		else if((opcodeWord & 0xF1C0) == 0xc1C0)
+		else if((opcodeWord & 0xF1C0) == 0xC1C0)
 		{
 			SEOps::muls(opcodeWord, buf, offset, od);
+		}
+		else if((opcodeWord & 0xF000) == 0xC000)
+		{
+			SEOps::and(opcodeWord, buf, offset, od);
 		}
 		else
 		{
@@ -319,6 +332,40 @@ void scanInput(void *buf, unsigned int offset, opDetails &od)
 		else
 		{
 			SEOps::adda(opcodeWord, buf, offset, od);
+		}
+		break;
+	case 0x0E:
+		if((opcodeWord & 0xF018) == 0xE000)
+		{
+			SEOps::asl(opcodeWord, buf, offset, od);
+		}
+		else if((opcodeWord & 0xF018) == 0xE008)
+		{
+			SEOps::lsl(opcodeWord, buf, offset, od);
+		}
+		else if((opcodeWord & 0xF018) == 0xE018)
+		{
+			SEOps::rol(opcodeWord, buf, offset, od);
+		}
+		else if((opcodeWord & 0xF018) == 0xE010)
+		{
+			SEOps::roxl(opcodeWord, buf, offset, od);
+		}
+		else if((opcodeWord & 0xFEC0) == 0xE0C0)
+		{
+			SEOps::asl(opcodeWord, buf, offset, od);
+		}
+		else if((opcodeWord & 0xFEC0) == 0xE2C0)
+		{
+			SEOps::lsl(opcodeWord, buf, offset, od);
+		}
+		else if((opcodeWord & 0xFEC0) == 0xE6C0)
+		{
+			SEOps::rol(opcodeWord, buf, offset, od);
+		}
+		else if((opcodeWord & 0xFEC0) == 0xE4C0)
+		{
+			SEOps::roxl(opcodeWord, buf, offset, od);
 		}
 		break;
 	}
@@ -362,6 +409,39 @@ unsigned char addonWords(uint8_t mode, uint8_t reg, uint8_t size)
 		break;
 	}
 	return 0;
+}
+
+void decodeModeReg(uint8_t mode, uint8_t reg, uint8_t size, struct operand &op)
+{
+	op.present = true;
+
+	switch(mode)
+	{
+	case 0x00:
+		op.addrMode = DATAREGDIRECT;
+		op.opData.op = reg;
+		break;
+	case 0x01:
+		op.addrMode = ADDRREGDIRECT;
+		op.opData.op = reg;
+		break;
+	case 0x02:
+		op.addrMode = ADDRINDIRECT;
+		op.opData.op = reg;
+		break;
+	case 0x03:
+		op.addrMode = ADDRINDIRECTPOSTINC;
+		op.opData.op = reg;
+		break;
+	case 0x04:
+		op.addrMode = ADDRINDIRECTPREDEC;
+		op.opData.op = reg;
+		break;
+	default:
+
+		break;
+	}
+
 }
 
 void displacement(uint16_t opcodeWord, uint16_t *buf, opDetails &od)
@@ -979,4 +1059,395 @@ namespace SEOps
 		od.mnemonic = "cmp";
 	}
 
+	void asl(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
+	{
+		unsigned int size = 1;
+		if((opcodeWord & 0x0100) == 0x0100)
+		{
+			od.mnemonic = "asl";
+		}
+		else
+		{
+			od.mnemonic = "asr";
+		}
+
+		if((opcodeWord & 0x0018) == 0x0000)
+		{
+
+			if((opcodeWord & 0x0020) == 0x0020)
+			{
+				// Data register.
+
+				uint16_t sReg = (opcodeWord & 0x0E00);
+				sReg >>= 9;
+				if((opcodeWord & 0x00C0) == 0)
+				{
+					od.operandSize = "b";
+				}
+				else if((opcodeWord & 0x00C0) == 1)
+				{
+					od.operandSize = "w";
+				}
+				else if((opcodeWord & 0x00C0) == 2)
+				{
+					od.operandSize = "l";
+				}
+
+				od.size = size;
+				od.op1.present = true;
+				od.op1.addrMode = DATAREGDIRECT;
+				od.op1.opData.reg = sReg;
+
+				od.op2.addrMode = DATAREGDIRECT;
+				od.op2.opData.reg = (opcodeWord & 0x0007);
+				od.op2.present = true;
+			}
+			else
+			{
+				// Immediate register shift..
+
+				od.op1.present = true;
+				od.op1.addrMode = QUICKIMMEDIATE;
+				od.op1.opData.op = ((opcodeWord & 0x0E00)>>9);
+
+				if((opcodeWord & 0x00C0) == 0)
+				{
+					od.operandSize = "b";
+				}
+				else if((opcodeWord & 0x00C0) == 1)
+				{
+					od.operandSize = "w";
+				}
+				else if((opcodeWord & 0x00C0) == 3)
+				{
+					od.operandSize = "l";
+				}
+				od.size = size;
+
+				od.op2.addrMode = DATAREGDIRECT;
+				od.op2.opData.reg = (opcodeWord & 0x0007);
+				od.op2.present = true;
+			}
+		}
+		else if((opcodeWord & 0x00C0) == 0x00C0)
+		{
+			size += addonWords(((opcodeWord & 0x0038) >>3), (opcodeWord & 0x0007), 4);
+			od.size = size;
+			decodeModeReg(((opcodeWord & 0x0038) >>3), (opcodeWord & 0x0007), 4, od.op1);
+
+		}
+
+
+
+	}
+
+	void and(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
+	{
+		od.mnemonic = "and";
+		od.size = 1;
+
+		uint8_t opMode = ((opcodeWord & 0x01C0) >> 6);
+
+		if((opMode & 0x04) == 0x04)
+		{
+			// Dn && <ea> -> <ea>
+			if(opMode == 0x04)
+			{
+				od.operandSize = "b";
+				od.size += addonWords(((opcodeWord & 0x0038) >>3), (opcodeWord & 0x0007), 1);
+				decodeModeReg(((opcodeWord & 0x0038) >> 3), (opcodeWord & 0x0007), 1, od.op2);
+			}
+			else if(opMode == 0x05)
+			{
+				od.operandSize = "w";
+				od.size += addonWords(((opcodeWord & 0x0038) >>3), (opcodeWord & 0x0007), 2);
+				decodeModeReg(((opcodeWord & 0x0038) >> 3), (opcodeWord & 0x0007), 2, od.op2);
+			}
+			else if(opMode == 0x06)
+			{
+				od.operandSize = "l";
+				od.size += addonWords(((opcodeWord & 0x0038) >>3), (opcodeWord & 0x0007), 4);
+				decodeModeReg(((opcodeWord & 0x0038) >> 3), (opcodeWord & 0x0007), 4, od.op2);
+			}
+
+			od.op1.present = true;
+			od.op1.addrMode = DATAREGDIRECT;
+			od.op1.opData.reg = ((opcodeWord & 0x0E00) >> 9);
+
+		}
+		else
+		{
+			// <ea> && Dn -> Dn
+			if(opMode == 0x00)
+			{
+				od.operandSize = "b";
+				od.size += addonWords(((opcodeWord & 0x0038) >>3), (opcodeWord & 0x0007), 1);
+				decodeModeReg(((opcodeWord & 0x0038) >> 3), (opcodeWord & 0x0007), 1, od.op1);
+			}
+			else if(opMode == 0x01)
+			{
+				od.operandSize = "w";
+				od.size += addonWords(((opcodeWord & 0x0038) >>3), (opcodeWord & 0x0007), 2);
+				decodeModeReg(((opcodeWord & 0x0038) >> 3), (opcodeWord & 0x0007), 2, od.op1);
+			}
+			else if(opMode == 0x02)
+			{
+				od.operandSize = "l";
+				od.size += addonWords(((opcodeWord & 0x0038) >>3), (opcodeWord & 0x0007), 4);
+				decodeModeReg(((opcodeWord & 0x0038) >> 3), (opcodeWord & 0x0007), 4, od.op1);
+			}
+
+			od.op2.present = true;
+			od.op2.addrMode = DATAREGDIRECT;
+			od.op2.opData.reg = ((opcodeWord & 0x0E00) >> 9);
+		}
+
+	}
+
+	void andi(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
+	{
+		od.mnemonic = "andi";
+	}
+
+	void eor(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
+	{
+		od.mnemonic = "eor";
+	}
+
+	void lsl(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
+	{
+		unsigned int size = 1;
+		if((opcodeWord & 0x0100) == 0x0100)
+		{
+			od.mnemonic = "lsl";
+		}
+		else
+		{
+			od.mnemonic = "lsr";
+		}
+
+		if((opcodeWord & 0x0018) == 0x0008)
+		{
+
+			if((opcodeWord & 0x0020) == 0x0020)
+			{
+				// Data register.
+
+				uint16_t sReg = (opcodeWord & 0x0E00);
+				sReg >>= 9;
+				if((opcodeWord & 0x00C0) == 0)
+				{
+					od.operandSize = "b";
+				}
+				else if((opcodeWord & 0x00C0) == 1)
+				{
+					od.operandSize = "w";
+				}
+				else if((opcodeWord & 0x00C0) == 2)
+				{
+					od.operandSize = "l";
+				}
+
+				od.size = size;
+				od.op1.present = true;
+				od.op1.addrMode = DATAREGDIRECT;
+				od.op1.opData.reg = sReg;
+
+				od.op2.addrMode = DATAREGDIRECT;
+				od.op2.opData.reg = (opcodeWord & 0x0007);
+				od.op2.present = true;
+			}
+			else
+			{
+				// Immediate register shift..
+
+				od.op1.present = true;
+				od.op1.addrMode = QUICKIMMEDIATE;
+				od.op1.opData.op = ((opcodeWord & 0x0E00)>>9);
+
+				if((opcodeWord & 0x00C0) == 0)
+				{
+					od.operandSize = "b";
+				}
+				else if((opcodeWord & 0x00C0) == 1)
+				{
+					od.operandSize = "w";
+				}
+				else if((opcodeWord & 0x00C0) == 3)
+				{
+					od.operandSize = "l";
+				}
+				od.size = size;
+
+				od.op2.addrMode = DATAREGDIRECT;
+				od.op2.opData.reg = (opcodeWord & 0x0007);
+				od.op2.present = true;
+			}
+		}
+		else if((opcodeWord & 0x00C0) == 0x00C0)
+		{
+			size += addonWords(((opcodeWord & 0x0038) >>3), (opcodeWord & 0x0007), 4);
+			od.size = size;
+			decodeModeReg(((opcodeWord & 0x0038) >>3), (opcodeWord & 0x0007), 4, od.op1);
+
+		}
+	}
+
+	void rol(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
+	{
+		unsigned int size = 1;
+		if((opcodeWord & 0x0100) == 0x0100)
+		{
+			od.mnemonic = "rol";
+		}
+		else
+		{
+			od.mnemonic = "ror";
+		}
+
+		if((opcodeWord & 0x0018) == 0x0018)
+		{
+
+			if((opcodeWord & 0x0020) == 0x0020)
+			{
+				// Data register.
+
+				uint16_t sReg = (opcodeWord & 0x0E00);
+				sReg >>= 9;
+				if((opcodeWord & 0x00C0) == 0)
+				{
+					od.operandSize = "b";
+				}
+				else if((opcodeWord & 0x00C0) == 1)
+				{
+					od.operandSize = "w";
+				}
+				else if((opcodeWord & 0x00C0) == 2)
+				{
+					od.operandSize = "l";
+				}
+
+				od.size = size;
+				od.op1.present = true;
+				od.op1.addrMode = DATAREGDIRECT;
+				od.op1.opData.reg = sReg;
+
+				od.op2.addrMode = DATAREGDIRECT;
+				od.op2.opData.reg = (opcodeWord & 0x0007);
+				od.op2.present = true;
+			}
+			else
+			{
+				// Immediate register shift..
+
+				od.op1.present = true;
+				od.op1.addrMode = QUICKIMMEDIATE;
+				od.op1.opData.op = ((opcodeWord & 0x0E00)>>9);
+
+				if((opcodeWord & 0x00C0) == 0)
+				{
+					od.operandSize = "b";
+				}
+				else if((opcodeWord & 0x00C0) == 1)
+				{
+					od.operandSize = "w";
+				}
+				else if((opcodeWord & 0x00C0) == 3)
+				{
+					od.operandSize = "l";
+				}
+				od.size = size;
+
+				od.op2.addrMode = DATAREGDIRECT;
+				od.op2.opData.reg = (opcodeWord & 0x0007);
+				od.op2.present = true;
+			}
+		}
+		else if((opcodeWord & 0x00C0) == 0x00C0)
+		{
+			size += addonWords(((opcodeWord & 0x0038) >>3), (opcodeWord & 0x0007), 4);
+			od.size = size;
+			decodeModeReg(((opcodeWord & 0x0038) >>3), (opcodeWord & 0x0007), 4, od.op1);
+
+		}
+	}
+
+	void roxl(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
+	{
+		unsigned int size = 1;
+		if((opcodeWord & 0x0100) == 0x0100)
+		{
+			od.mnemonic = "roxl";
+		}
+		else
+		{
+			od.mnemonic = "roxr";
+		}
+
+		if((opcodeWord & 0x0018) == 0x0010)
+		{
+
+			if((opcodeWord & 0x0020) == 0x0020)
+			{
+				// Data register.
+
+				uint16_t sReg = (opcodeWord & 0x0E00);
+				sReg >>= 9;
+				if((opcodeWord & 0x00C0) == 0)
+				{
+					od.operandSize = "b";
+				}
+				else if((opcodeWord & 0x00C0) == 1)
+				{
+					od.operandSize = "w";
+				}
+				else if((opcodeWord & 0x00C0) == 2)
+				{
+					od.operandSize = "l";
+				}
+
+				od.size = size;
+				od.op1.present = true;
+				od.op1.addrMode = DATAREGDIRECT;
+				od.op1.opData.reg = sReg;
+
+				od.op2.addrMode = DATAREGDIRECT;
+				od.op2.opData.reg = (opcodeWord & 0x0007);
+				od.op2.present = true;
+			}
+			else
+			{
+				// Immediate register shift..
+
+				od.op1.present = true;
+				od.op1.addrMode = QUICKIMMEDIATE;
+				od.op1.opData.op = ((opcodeWord & 0x0E00)>>9);
+
+				if((opcodeWord & 0x00C0) == 0)
+				{
+					od.operandSize = "b";
+				}
+				else if((opcodeWord & 0x00C0) == 1)
+				{
+					od.operandSize = "w";
+				}
+				else if((opcodeWord & 0x00C0) == 3)
+				{
+					od.operandSize = "l";
+				}
+				od.size = size;
+
+				od.op2.addrMode = DATAREGDIRECT;
+				od.op2.opData.reg = (opcodeWord & 0x0007);
+				od.op2.present = true;
+			}
+		}
+		else if((opcodeWord & 0x00C0) == 0x00C0)
+		{
+			size += addonWords(((opcodeWord & 0x0038) >>3), (opcodeWord & 0x0007), 4);
+			od.size = size;
+			decodeModeReg(((opcodeWord & 0x0038) >>3), (opcodeWord & 0x0007), 4, od.op1);
+
+		}
+	}
 }

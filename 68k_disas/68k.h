@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-enum addressMode {DATAREGDIRECT, ADDRREGDIRECT, ABSSHORT, ABSLONG, PCRELOFF, PCRELINDOFF, ADDRINDIRECT, ADDRINDIRECTPOSTINC, ADDRINDIRECTPREDEC}; 
+enum addressMode {DATAREGDIRECT, ADDRREGDIRECT, ABSSHORT, ABSLONG, PCRELOFF, PCRELINDOFF, ADDRINDIRECT, ADDRINDIRECTPOSTINC, ADDRINDIRECTPREDEC, IMMEDIATE, QUICKIMMEDIATE}; 
 
 union operandData
 {
@@ -33,6 +33,7 @@ void decode(void *buf, unsigned int offset);
 void scanInput(void *buf, unsigned int offset, opDetails &od);
 
 unsigned char addonWords(uint8_t mode, uint8_t reg, uint8_t size);
+void decodeModeReg(uint8_t mode, uint8_t reg, uint8_t size, struct operand &op);
 void displacement(uint16_t opcodeWord, uint16_t *buf, opDetails &od);
 
 namespace SEOps
@@ -112,6 +113,16 @@ namespace SEOps
 	void clr(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
 
 	void cmp(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
+
+	void asl(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
+
+	void and(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
+	void andi(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
+	void eor(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
+
+	void lsl(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
+	void rol(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
+	void roxl(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
 }
 
 
