@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-enum addressMode {DATAREGDIRECT, ADDRREGDIRECT, ABSSHORT, ABSLONG, PCRELOFF, PCRELINDOFF, ADDRINDIRECT, ADDRINDIRECTPOSTINC, ADDRINDIRECTPREDEC, IMMEDIATE, QUICKIMMEDIATE, CCR}; 
+enum addressMode {DATAREGDIRECT, ADDRREGDIRECT, ABSSHORT, ABSLONG, PCRELOFF, PCRELINDOFF, ADDRINDIRECT, ADDRINDIRECTPOSTINC, ADDRINDIRECTPREDEC, IMMEDIATE, QUICKIMMEDIATE, CCR, SR}; 
 
 union operandData
 {
@@ -110,7 +110,10 @@ namespace SEOps
 	void ori(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
 	void moveq(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
 
-	void move_ccr(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
+	void move_to_ccr(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
+
+	void move_from_sr(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
+	void move_to_sr(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
 
 	void clr(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od);
 

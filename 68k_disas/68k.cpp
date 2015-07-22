@@ -72,15 +72,29 @@ void scanInput(void *buf, unsigned int offset, opDetails &od)
 		}
 		break;
 	case 0x04:
-		if((opcodeWord & 0xFF00) == 0x4200)
+		if((opcodeWord & 0xFF00) == 0x4000)
+		{
+			if ((opcodeWord & 0xFFC0) == 0x40C0)
+			{
+				SEOps::move_from_sr(opcodeWord, buf, offset, od);
+			}
+		}
+		else if((opcodeWord & 0xFF00) == 0x4200)
 		{
 			if ((opcodeWord & 0xFFC0) == 0x42C0)
 			{
-				SEOps::move_ccr(opcodeWord, buf, offset, od);
+				SEOps::move_to_ccr(opcodeWord, buf, offset, od);
 			}
 			else
 			{
 				SEOps::clr(opcodeWord, buf, offset, od);
+			}
+		}
+		else if ((opcodeWord & 0xFF00) == 0x4400)
+		{
+			if ((opcodeWord & 0xFFC0) == 0x44C0)
+			{
+				SEOps::move_to_sr(opcodeWord, buf, offset, od);
 			}
 		}
 		else if((opcodeWord & 0xF1C0) == 0x41C0)
@@ -1102,16 +1116,42 @@ namespace SEOps
 		od.mnemonic = "moveq";
 	}
 
-	void move_ccr(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
+	void move_to_ccr(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
 	{
 		unsigned int size = 1;
-		od.size = size;
 		od.mnemonic = "move";
 		od.operandSize = "i";
 		od.op1.addrMode = CCR;
 		od.op1.present = true;
 		size += addonWords(((opcodeWord & 0x0038) >> 3), (opcodeWord & 0x0007), 4);
 		decodeModeReg(((opcodeWord & 0x0038) >> 3), (opcodeWord & 0x0007), 2, od.op2);
+		od.size = size;
+	}
+
+	void move_from_sr(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
+	{
+		unsigned int size = 1;
+
+		od.mnemonic = "move";
+		od.operandSize = "i";
+		od.op1.addrMode = SR;
+		od.op1.present = true;
+		size += addonWords(((opcodeWord & 0x0038) >> 3), (opcodeWord & 0x0007), 4);
+		decodeModeReg(((opcodeWord & 0x0038) >> 3), (opcodeWord & 0x0007), 2, od.op2);
+		od.size = size;
+	}
+
+	void move_to_sr(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
+	{
+		unsigned int size = 1;
+
+		od.mnemonic = "move";
+		od.operandSize = "i";
+		od.op2.addrMode = SR;
+		od.op2.present = true;
+		size += addonWords(((opcodeWord & 0x0038) >> 3), (opcodeWord & 0x0007), 4);
+		decodeModeReg(((opcodeWord & 0x0038) >> 3), (opcodeWord & 0x0007), 2, od.op1);
+		od.size = size;
 	}
 
 	void clr(uint16_t opcodeWord, void *buf, unsigned int offset, opDetails &od)
